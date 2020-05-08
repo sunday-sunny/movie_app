@@ -1,42 +1,45 @@
 import React from "react";
-import PropTypes from "prop-types";
+import axios from "axios";
+import Movie from "./Movies";
 
-const FruitList = [
-  { id: 1, name: "Peach", emoji: "🍑", number: 5 },
-  { id: 2, name: "Orange", emoji: "🍊", number: 3 },
-  { id: 3, name: "Kiwi", emoji: "🥝", number: 2 },
-  { id: 4, name: "Banana", emoji: "🍌", number: 4 },
-];
+class App extends React.Component {
+  state = {
+    isLoading: true,
+    movies: [],
+  };
 
-function Fruit({ name, emoji, number }) {
-  return (
-    <div>
-      <h3>
-        I love {name} {emoji} 👉stock {number}
-      </h3>
-    </div>
-  );
-}
-
-Fruit.propTypes = {
-  name: PropTypes.string.isRequired,
-  emoji: PropTypes.string.isRequired,
-  number: PropTypes.string.isRequired,
-};
-
-function App() {
-  return (
-    <div>
-      {FruitList.map((piece) => (
-        <Fruit
-          key={piece.id}
-          name={piece.name}
-          emoji={piece.emoji}
-          number={piece.number}
-        />
-      ))}
-    </div>
-  );
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies },
+      },
+    } = await axios.get(
+      "https://yts-proxy.now.sh/list_movies.json?sort_by=rating"
+    );
+    this.setState({ movies, isLoading: false });
+  };
+  componentDidMount() {
+    this.getMovies();
+  }
+  render() {
+    const { isLoading, movies } = this.state;
+    return (
+      <div>
+        {isLoading
+          ? "Loading..."
+          : movies.map((movie) => (
+              <Movie
+                key={movie.id}
+                id={movie.id}
+                year={movie.year}
+                title={movie.title}
+                summary={movie.summary}
+                poster={movie.medium_cover_image}
+              />
+            ))}
+      </div>
+    );
+  }
 }
 
 export default App;
